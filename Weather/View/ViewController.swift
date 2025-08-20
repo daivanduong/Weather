@@ -10,6 +10,7 @@ import UIKit
 class ViewController: UIViewController {
     
     var viewModel: WeatherViewModelProtocol = WeatherViewModel()
+    var dataWeatherApi: WeatherApi!
     
     @IBOutlet weak var lbCityName: UILabel!
     
@@ -21,18 +22,28 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
-        setupView()
-        lbCityName.text = viewModel.getNameCity()
+        let url = URL(string: "https://api.weatherapi.com/v1/forecast.json?key=df3d55c0b40341efb1e135746251808&q=phu tho&days=5")!
+        URLSession.shared.dataTask(with: url) { [weak self] data, response , error in
+            if let data = data {
+                let dataApi = try! JSONDecoder().decode(WeatherApi.self, from: data)
+                print(dataApi.location?.name as Any)
+                self?.dataWeatherApi = dataApi
+                self?.lbCityName.text = dataApi.location!.name
+//                print(self?.dataWeatherApi?.location?.name)
+//                self?.reloadUI?()
+               
+            }
+        } .resume()
+        
+        
+        //lbCityName.text = dataWeatherApi.location!.name ?? ""
+       
+        
+        //lbTemp.text = "\(dataWeatherApi.current?.temp_c)"
        
     }
     
-    override func viewWillAppear(_ animated: Bool) {
-        super.viewWillAppear(animated)
-        lbCityName.text = viewModel.getNameCity()
-       
-        
-        lbTemp.text = "\(viewModel.getTemp_c())"
-    }
+    
     
     func setupView() {
         viewModel.callAPI()
